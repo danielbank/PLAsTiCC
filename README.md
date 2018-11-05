@@ -108,7 +108,7 @@ extragal = metadata['hostgal_specz'] != 0.
 
 #### 2. Data Augmentation
 
-Per the PLAsTiCC Classification Demo, there are definitely biases in the data.  We will try to derive bias corrections based on the spectroscopic and photometric redshift and use this to apply non-linear transformations to the data prior to processing.  We may try other methods for identifying and remove outlier data from our training dataset as well.
+Per the PLAsTiCC Classification Demo, there are definitely biases in the data.  We will try to derive bias corrections based on the spectroscopic and photometric redshift and use this to apply non-linear transformations to the data prior to processing.  We may try other methods for identifying and removing outlier data from our training dataset as well.
 
 #### 3. Principle Component Analysis (PCA)
 
@@ -122,7 +122,7 @@ Xtest_pca = pca.transform(Xtest)
 
 #### 4. Fit a Classifier
 
-We will evaluate several classifiers and select whichever one achieves the best accuracy.  Below are a few classifiers which look promising:
+We will evaluate several classifiers and select whichever one achieves the best accuracy.  Below are a couple directions which look promising:
 
 - Long Short Term Memory (LSTM) Networks: LSTM networks are Recurrent Neural Networks (RNN) that are composed of LSTM units [[4](#reference-4)].  These networks specialize in classifying time-series data, and are a perfect candidate for the PLAsTiCC dataset.
 
