@@ -19,7 +19,7 @@ I first became aware of this challenge while browsing the Kaggle competitions.  
 
 PLAsTiCC includes a 7 GB training dataset of labeled data.  That is to say, the cosmological objects in the training data have known classifications that our model can be trained on.  Our trained model must then for every object i in the test dataset predict the probabilities of it belonging to class j.  For any object, these probabilities should sum to 1.
 
-![Classification Probabilities](.github/probability_equations.png)
+![Classification Probabilities](https://github.com/danielbank/PLAsTiCC/blob/master/.github/probability_equations.png)
 
 The largest `Pij` for object i is what our model will finally classify it as.  These predicted classifications can then be compared to the actual classifications for the objects in the test dataset to obtain an accuracy for our model.
 
@@ -70,7 +70,7 @@ The PLAsTiCC team has provided a [naive classifier](https://www.kaggle.com/micha
 
 The performance of the naive classifier on the test data can be visualized in the following confusion matrix:
 
-![Naive Classifier Confusion Matrix](.github/naive_classifier_confusion_matrix.png)
+![Naive Classifier Confusion Matrix](https://github.com/danielbank/PLAsTiCC/blob/master/.github/naive_classifier_confusion_matrix.png)
 
 In this matrix, we can see the model's predicted labels versus the true labels for the test set.  Ideally, this confusion matrix would be the Identity matrix, with all values along the diagonal being 1 and everything else being 0.  That would mean that the model predicted the correct label 100% of the time.
 
