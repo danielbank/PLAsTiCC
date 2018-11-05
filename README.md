@@ -1,6 +1,7 @@
 # Machine Learning Engineer Nanodegree
 
 ## Capstone Proposal
+
 Daniel Bank
 November 3rd, 2018
 
@@ -20,9 +21,7 @@ PLAsTiCC includes a 7 GB training dataset of labeled data.  That is to say, the 
 
 ![Classification Probabilities](.github/probability_equations.png)
 
-The largest `Pij` for object i is what our model will finally classify it as.  These predicted classifications can be compared to the actual classifications for the objects in the test dataset to obtain an accuracy for our model.  In the PLAsTiCC classification demo, this is shown in a confusion matrix where one axis is the predicted labels and the other access is the true label.
-
-![Naive Classifier Confusion Matrix](.github/naive_classifier_confusion_matrix.png)
+The largest `Pij` for object i is what our model will finally classify it as.  These predicted classifications can then be compared to the actual classifications for the objects in the test dataset to obtain an accuracy for our model.
 
 One interesting aspect of this competition is that the training dataset is a small subset of the test dataset and is also a poor representation of it.  This design decision was made to imitate the real-world challenges that astronomers face when trying to classify cosmological objects.
 
@@ -56,7 +55,7 @@ The columns for the light-curve data file are defined as follows in the PLAsTiCC
 
 ### Solution Statement
 
-A satisfactory solution to this problem will use the time-dependent light-curve data to solve a multiclass classification problem.  There are numerous methods we can employ to achieve this.  One might be to use a Convolutional Neural Network (CNN) where the final layer is a softmax function that yields the `Pij`.  Another could be to use a Random Forest Classifier, as was done in the Benchmark Solution.  Regardless of the approach chosen, we will evaluate the accuracy of the model by looking at it's confusion matrix for the test dataset.  
+A satisfactory solution to this problem will use the time-dependent light-curve data to solve a multiclass classification problem.  There are numerous methods we can employ to achieve this.  One might be to use a Convolutional Neural Network (CNN) where the final layer is a softmax function that yields the `Pij`.  Another could be to use a Random Forest Classifier, as was done in the Benchmark Solution.  Regardless of the approach chosen, we will evaluate the accuracy of the model by plotting at its confusion matrix for the test dataset and comparing it to that of the naive classifier.  
 
 ### Benchmark Model
 
@@ -73,7 +72,7 @@ The performance of the naive classifier on the test data can be visualized in th
 
 ![Naive Classifier Confusion Matrix](.github/naive_classifier_confusion_matrix.png)
 
-In this matrix, we can see the model's predicted labels compared to the true labels for the test set.  Ideally, this matrix would be the Identity matrix, all values along the diagonal being 1 and everything else being 0.  That would mean that the model predicted the correct label 100% of the time.
+In this matrix, we can see the model's predicted labels versus the true labels for the test set.  Ideally, this confusion matrix would be the Identity matrix, with all values along the diagonal being 1 and everything else being 0.  That would mean that the model predicted the correct label 100% of the time.
 
 When designing my classifier, I will generate a similar confusion matrix so that my results can be objectively compared to the naive classifier.  My objective is to have an average prediction accuracy per label that is higher than the naive classifier's accuracy of 0.518 (see calculation below):
 
@@ -85,22 +84,56 @@ When designing my classifier, I will generate a similar confusion matrix so that
 ```
 
 ### Project Design
-_(approx. 1 page)_
 
-**In this final section, summarize a theoretical workflow for approaching a solution given the problem. Provide thorough discussion for what strategies you may consider employing, what analysis of the data might be required before being used, or which algorithms will be considered for your implementation. The workflow and discussion that you provide should align with the qualities of the previous sections. Additionally, you are encouraged to include small visualizations, pseudocode, or diagrams to aid in describing the project design, but it is not required. The discussion should clearly outline your intended workflow of the capstone project.**
+We propose the following design for a PLAsTiCC classification pipeline:
+
+#### 1. Separate Classifiers
+
+As recommended by the PLAsTiCC Classification Demo, we will split the data along certain dimensions (yet to be decided) and create separate classifiers for the two sets [[3](#reference-3)].  One possibility is to split the data according to whether it was captured with DDF or WFD field:
+
+```python
+# Separating data by DDF / WDF fields
+ddf_data = metadata['ddf'] == True
+wdf_data = metadata['ddf'] == False
+```
+
+Another possibility is to separate the data according to intergalactic and extragalactic sources on the basis of redshift (intergalactic sources have a redshift of 0).  We might even divide the data further along the lines of redshift and create multiple redshift bins (more than two for intergalactic and extragalactic).
+
+```python
+# Separating data by spectroscopic redshift
+# (Two bins for extragalactic and intragalactic)
+intragal = metadata['hostgal_specz'] == 0.
+extragal = metadata['hostgal_specz'] != 0.
+```
+
+#### 2. Data Augmentation
+
+Per the PLAsTiCC Classification Demo, there are definitely biases in the data.  We will try to derive bias corrections based on the spectroscopic and photometric redshift and use this to apply non-linear transformations to the data prior to processing.  We may try other methods for identifying and remove outlier data from our training dataset as well.
+
+#### 3. Principle Component Analysis (PCA)
+
+As the dimensionality of the data is large, it is appropriate to reduce it using PCA so we can have a simpler model that is faster to train and easier to reason about.
+
+```python
+pca = PCA(n_components=8, whiten=True, svd_solver="full", random_state=42)
+Xtrain_pca = pca.fit_transform(Xtrain)
+Xtest_pca = pca.transform(Xtest)
+```
+
+#### 4. Fit a Classifier
+
+We will evaluate several classifiers and select whichever one achieves the best accuracy.  Below are a few classifiers which look promising:
+
+- Long Short Term Memory (LSTM) Networks: LSTM networks are Recurrent Neural Networks (RNN) that are composed of LSTM units [[4](#reference-4)].  These networks specialize in classifying time-series data, and are a perfect candidate for the PLAsTiCC dataset.
+
+- Multi Layer Perceptron (MLP): A simple neural network may perform better than an RNN for classifying the PLAsTiCC dataset.  This would especially be true if the time dependence of the light curve data played a smaller role than the relationships of the different passbands themselves in the classification of the object.  As it is a simpler model to understand, MLP may be a good starting place.
 
 ### References
 
-<a name="reference-1"></a>[1] - [The PLAsTiCC Astronomy Starter Kit](https://www.kaggle.com/michaelapers/the-plasticc-astronomy-starter-kit)
+<a name="reference-1"></a>[1] - [PLAsTiCC Astronomy Starter Kit](https://www.kaggle.com/michaelapers/the-plasticc-astronomy-starter-kit)
 
 <a name="reference-2"></a>[2] - [PLAsTiCC Data Note](https://www.kaggle.com/c/PLAsTiCC-2018/download/data_note.pdf)
 
------------
+<a name="reference-3"></a>[3] - [PLAsTiCC Classification Demo](https://www.kaggle.com/michaelapers/the-plasticc-astronomy-classification-demo)
 
-**Before submitting your proposal, ask yourself. . .**
-
-- Does the proposal you have written follow a well-organized structure similar to that of the project template?
-- Is each section (particularly **Solution Statement** and **Project Design**) written in a clear, concise and specific fashion? Are there any ambiguous terms or phrases that need clarification?
-- Would the intended audience of your project be able to understand your proposal?
-- Have you properly proofread your proposal to assure there are minimal grammatical and spelling mistakes?
-- Are all the resources used for this project correctly cited and referenced?
+<a name="reference-4"></a>[4] - [Long short term memory](https://en.wikipedia.org/wiki/Long_short-term_memory)
