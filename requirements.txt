@@ -26,7 +26,6 @@ Keras==2.2.4
 Keras-Applications==1.0.6
 Keras-Preprocessing==1.0.5
 kiwisolver==1.0.1
-lightgbm==2.2.2
 MarkupSafe==1.1.0
 matplotlib==3.0.0
 mistune==0.8.4
