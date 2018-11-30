@@ -108,3 +108,5 @@ venv.bak/
 
 # PLAsTiCC
 /input
+/report/model_extragal.weights
+/report/model_intragal.weights
