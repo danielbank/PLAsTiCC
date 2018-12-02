@@ -17,7 +17,7 @@ I first became aware of this challenge while browsing the Kaggle competitions.  
 
 ### Problem Statement
 
-PLAsTiCC includes a 7 GB training dataset of labeled data.  That is to say, the cosmological objects in the training data have known classifications that our model can be trained on.  Our trained model must then for every object i in the test dataset predict the probabilities of it belonging to class j.  For any object, these probabilities should sum to 1.
+PLAsTiCC includes a 60 MB training dataset of labeled data.  That is to say, the cosmological objects in the training data have known classifications that our model can be trained on.  Our trained model must then for every object i in the test dataset predict the probabilities of it belonging to class j.  For any object, these probabilities should sum to 1.
 
 ![Classification Probabilities](.github/probability_equations.png)
 
