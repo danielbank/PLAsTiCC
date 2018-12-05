@@ -21,6 +21,7 @@ I first became aware of this challenge while browsing the Kaggle competitions.  
 PLAsTiCC includes a 60 MB training dataset of labeled data.  That is to say, the sources in the training data have known classifications that our model can be trained on.  Our trained model must then for every object i in the test dataset predict the probabilities of it belonging to class j.  For any object, these probabilities should sum to 1.
 
 ![Classification Probabilities](https://github.com/danielbank/PLAsTiCC/blob/master/.github/probability_equations.png?raw=true)
+**<center>Classification Probability Equations</center>**
 
 The largest `Pij` for object i is what our model will finally classify it as.  These predicted classifications can then be compared to the actual classifications for the objects in the test dataset to obtain an accuracy for our model.
 
@@ -30,7 +31,8 @@ Our objective is to beat the accuracy of the PLAsTiCC Astronomy Classification D
 
 The PLAsTiCC team has provided a demo classifier for the challenge [[2](#references)].  The performance of the demo classifier on the test data can be visualized in the following confusion matrix:
 
-![Naive Classifier Confusion Matrix](https://github.com/danielbank/PLAsTiCC/blob/master/.github/naive_classifier_confusion_matrix.png?raw=true)
+![Demo Classifier Confusion Matrix](https://github.com/danielbank/PLAsTiCC/blob/master/.github/naive_classifier_confusion_matrix.png?raw=true)
+**<center>Demo Classifier Confusion Matrix</center>**
 
 In this matrix, we can see the model's predicted labels versus the true labels for the test set.  Ideally, this confusion matrix would be the Identity matrix, with all values along the diagonal being 1 and everything else being 0.  That would mean that the model predicted the correct label 100% of the time.
 
@@ -50,6 +52,7 @@ When designing my classifier, I will generate a similar confusion matrix so that
 One interesting observation is that classes in the training data set divide evenly into intragalactic and extragalactic categories [[3](#references)].  There are no classes that are present in both categories.  This suggests that we can partition the dataset along these lines and train two separate CNN models to predict using the subset of classes for each category.
 
 ![Intragalactic vs Extragalactic Sources in Training Data](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_vs_extragalactic.png?raw=true)
+**<center>Intragalactic vs Extragalactic Sources in Training Data</center>**
 
 Another point of interest is that Class 99 (the unknown classification) is not present at all in the training dataset.  This raises a serious problem:  How to predict this mystery class when it is not represented at all in the training data?  While predicting Class 99 is not necessary for the limited scope of this report (our test data is split from the training dataset using `sklearn.model_selection.StratifiedKFold`), it nonetheless gives us an appreciation for the real difficulty of this competition.  The problem is further compounded by another challenging aspect of the competition, that the training dataset is a small subset of the test dataset and also a poor representation of it.  This design decision was made to imitate the real-world challenges that astronomers face when trying to classify cosmological objects.
 
@@ -62,13 +65,14 @@ It is helpful to look at the example passband data for the various classes to ge
 ![Class 92 Light Curve Example 2](https://github.com/danielbank/PLAsTiCC/blob/master/.github/lightcurve_92_2.png?raw=true)
 
 ![Class 92 Light Curve Example 3](https://github.com/danielbank/PLAsTiCC/blob/master/.github/lightcurve_92_3.png?raw=true)
+**<center>Class 92 Light Curve Examples</center>**
 
 ![Class 42 Light Curve Example 1](https://github.com/danielbank/PLAsTiCC/blob/master/.github/lightcurve_42_1.png?raw=true)
 
 ![Class 42 Light Curve Example 2](https://github.com/danielbank/PLAsTiCC/blob/master/.github/lightcurve_42_2.png?raw=true)
 
 ![Class 42 Light Curve Example 3](https://github.com/danielbank/PLAsTiCC/blob/master/.github/lightcurve_42_3.png?raw=true)
-
+**<center>Class 42 Light Curve Examples</center>**
 
 ## Benchmark
 
@@ -92,6 +96,9 @@ Using [Higepon's CNN based model](https://www.kaggle.com/higepon/keras-cnn-use-t
 
 The data for this challenge has been provided in a curated form by the PLAsTiCC Team.  As such most data preprocessing techniques, like defaulting missing data values or one-hot encoding text categories, are not required for our pipeline.  We do make use of `sklearn.preprocessing.StandardScaler` to standardize the time-series features (`mjd`, `flux`, and `flux_err`).  Standardizing means removing the mean and scaling the feature to unit variance [[6](#references)].  This is helpful for CNN training.
 
+![Scaled Data](https://github.com/danielbank/PLAsTiCC/blob/master/.github/scaled_data.png?raw=true)
+**<center>Time Series Data after Scaling</center>**
+
 ## Partitioning Intragalactic and Extragalactic Sources
 
 As seen in the Data Exploration section, we can narrow number of possible classifications to 5 out of 14 possibilities for galactic sources and 9 out of 14 possibilities for extragalactic sources.  It makes sense to partition our data along these lines and train two separate CNN's for each category.  In this manner, we can reduce the number of erroneous classifications for each model.
@@ -107,6 +114,12 @@ The general steps for doing the 2-D transformation are to:
 - Group the time-series data (flux, flux_err, detected) by passband per object
 - Take the Matrix Tranpose (m x n) => (n x m)
 - Extract object labels for the passband == 0 row for each object
+
+![Grouped Data](https://github.com/danielbank/PLAsTiCC/blob/master/.github/grouped_data.png?raw=true)
+**<center>Time Series Data after Grouping</center>**
+
+![Passband 0 Data](https://github.com/danielbank/PLAsTiCC/blob/master/.github/passband0_data.png?raw=true)
+**<center>Extracted Passband 0 Data</center>**
 
 ## CNN Model Implementation
 
@@ -142,25 +155,27 @@ The summary of the architecture for one of the CNN's is shown below.  Here the i
 
 Model accuracy has been graphed versus epoch for both the intragalactic and extragalactic datasets for each of the five folds from the `StratifiedKFold` step.  The intragalactic dataset has better training and validation results, consistently achieving above 0.7 accuracy.  The extragalactic dataset only reaches about about 0.35 accuracy.  In all the graphs, we see evidence of overfitting.  The validation score increases until reaching a plateau point around which it oscillates, sometimes with quite large swings in accuracy.
 
-![Extragalactic Model Accuracy 1](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_1.png?raw=true)
+![Extragalactic CNN Model Accuracy 1](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_1.png?raw=true)
 
-![Extragalactic Model Accuracy 2](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_2.png?raw=true)
+![Extragalactic CNN Model Accuracy 2](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_2.png?raw=true)
 
-![Extragalactic Model Accuracy 3](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_3.png?raw=true)
+![Extragalactic CNN Model Accuracy 3](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_3.png?raw=true)
 
-![Extragalactic Model Accuracy 4](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_4.png?raw=true)
+![Extragalactic CNN Model Accuracy 4](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_4.png?raw=true)
 
-![Extragalactic Model Accuracy 5](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_5.png?raw=true)
+![Extragalactic CNN Model Accuracy 5](https://github.com/danielbank/PLAsTiCC/blob/master/.github/extragalactic_model_acc_5.png?raw=true)
+**<center>Extragalactic CNN Model Accuracy</center>**
 
-![Intragalactic Model Accuracy 1](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_1.png?raw=true)
+![Intragalactic CNN Model Accuracy 1](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_1.png?raw=true)
 
-![Intragalactic Model Accuracy 2](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_2.png?raw=true)
+![Intragalactic CNN Model Accuracy 2](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_2.png?raw=true)
 
-![Intragalactic Model Accuracy 3](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_3.png?raw=true)
+![Intragalactic CNN Model Accuracy 3](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_3.png?raw=true)
 
-![Intragalactic Model Accuracy 4](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_4.png?raw=true)
+![Intragalactic CNN Model Accuracy 4](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_4.png?raw=true)
 
-![Intragalactic Model Accuracy 5](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_5.png?raw=true)
+![Intragalactic CNN Model Accuracy 5](https://github.com/danielbank/PLAsTiCC/blob/master/.github/intragalactic_model_acc_5.png?raw=true)
+**<center>Intragalactic CNN Model Accuracy</center>**
 
 ## Justification
 
@@ -174,6 +189,7 @@ Our CNN-based model yields the following confusion matrix with an average predic
 ```
 
 ![CNN-Based Model Classifier Confusion Matrix](https://github.com/danielbank/PLAsTiCC/blob/master/.github/cnn_model_confusion_matrix.png?raw=true)
+**<center>CNN-Based Model Classifier Confusion Matrix</center>**
 
 # Conclusion
 
@@ -196,7 +212,7 @@ We might be able to improve the model's accuracy by refining the CNN archiecture
 ## Closing Remarks
 
 ![The Hierarchy of Variable and Transient Sources](https://github.com/danielbank/PLAsTiCC/blob/master/.github/variability_tree.jpg?raw=true)
-**<center>Figure 5: The hierarchy of variable and transient sources. Credit: Laurent Eyer and Nami Mowlawi, Université de Genève</center>**
+**<center>Hierarchy of Variable and Transient Sources. Credit: Laurent Eyer and Nami Mowlawi, Université de Genève</center>**
 
 The tree diagram above illustrates every type of light source seen in the night sky that mankind currently knows about.  This tree is predicted to grow when the LSST comes online and begins collecting 20-40TB of light curve data every night.  The task of sifting through this enormous amount of data and finding those new types of light sources is impractical for humans but a perfect use case for machine learning.  Nonetheless, it is a huge technical challenge.  Finding those interesting sources whose light curve is different than the known classifications is like finding a needle in a haystack.  In the nomenclature of PLAsTiCC, astronomers are trying to detect Class 99 in a huge test dataset with models trained on on a small training set that doesn't include it.
 
