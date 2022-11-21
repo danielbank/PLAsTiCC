@@ -55,7 +55,7 @@ scipy==1.1.0
 seaborn==0.9.0
 Send2Trash==1.5.0
 six==1.11.0
-tensorflow==2.7.2
+tensorflow==2.9.3
 terminado==0.8.1
 testpath==0.4.2
 toolz==0.9.0
